@@ -1,0 +1,21 @@
+# Apache 用（さくら・ロリポップ等の共用サーバー）
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Content-Security-Policy "default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; script-src 'sha256-iTNAonfqLJbzblEd6dJXMLnCUb/qjxUMn/RBh0w1v24='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://formsubmit.co; manifest-src 'self'; upgrade-insecure-requests"
+</IfModule>
+# HTTPS へ強制
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+# ディレクトリ一覧の無効化・不要ファイルの保護
+Options -Indexes
+<FilesMatch "\.(py|md)$">
+  Require all denied
+</FilesMatch>

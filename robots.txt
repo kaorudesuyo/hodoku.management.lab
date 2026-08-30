@@ -1,0 +1,19 @@
+# ほどく経営研究所 — robots.txt
+# 検索エンジン・AI検索クローラーとも、公開ページの取得を許可します。
+User-agent: *
+Allow: /
+Disallow: /tools/
+
+# 主要なAIクローラー（明示的に許可）
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://YOUR-DOMAIN/sitemap.xml
