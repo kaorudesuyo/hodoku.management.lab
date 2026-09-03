@@ -7,5 +7,5 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; script-src 'sha256-iTNAonfqLJbzblEd6dJXMLnCUb/qjxUMn/RBh0w1v24='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://formsubmit.co; manifest-src 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; script-src 'sha256-I850Sf3dwGqwUILMSTRueK0Tbntwoa3wpjV9ffdH9BQ='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://formsubmit.co; manifest-src 'self'; upgrade-insecure-requests
   Cache-Control: public, max-age=3600
