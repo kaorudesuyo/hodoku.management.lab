@@ -1,11 +1,29 @@
-# Netlify / Cloudflare Pages 用のレスポンスヘッダー設定
-# （meta タグでは設定できない項目。Apache の場合は .htaccess を使用）
+# ほどく経営研究所 — HTTPレスポンスヘッダー（Netlify / Cloudflare Pages が読み込みます）
+# 外部から読み込むのはフォーム中継先（formsubmit.co）への送信だけ。それ以外はすべて自サイト内。
+
 /*
-  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' https://formsubmit.co; manifest-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; require-trusted-types-for 'script'; trusted-types 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), xr-spatial-tracking=(), browsing-topics=()
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; script-src 'sha256-I850Sf3dwGqwUILMSTRueK0Tbntwoa3wpjV9ffdH9BQ='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://formsubmit.co; manifest-src 'self'; upgrade-insecure-requests
+  X-Permitted-Cross-Domain-Policies: none
+
+# フォントは内容が変わらないので長期キャッシュ。CSS・JS・画像は差し替えがすぐ反映されるよう短めに
+/assets/fonts/*
+  Cross-Origin-Resource-Policy: same-origin
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/css/*
+  Cross-Origin-Resource-Policy: same-origin
+  Cache-Control: public, max-age=3600
+
+/assets/js/*
+  Cross-Origin-Resource-Policy: same-origin
+  Cache-Control: public, max-age=3600
+
+/assets/img/*
+  Cross-Origin-Resource-Policy: same-origin
   Cache-Control: public, max-age=3600

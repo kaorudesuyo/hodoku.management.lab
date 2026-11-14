@@ -1,0 +1,4 @@
+# Netlify 設定：公開するのは site フォルダの中身だけ。
+# docs フォルダ（手順書・監査レポート）は公開されません。
+[build]
+  publish = "site"

@@ -1,0 +1,9 @@
+# 公開する必要のないファイルは、置かれてしまっても 404 を返す（保険）
+/README.md        /404.html   404!
+/readme.md        /404.html   404!
+/tools/*          /404.html   404!
+/docs/*           /404.html   404!
+/netlify.toml     /404.html   404!
+/_htaccess        /404.html   404!
+# 脆弱性の連絡先（RFC 9116 の規定の場所で公開）
+/.well-known/security.txt   /security.txt   200

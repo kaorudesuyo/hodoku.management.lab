@@ -1,0 +1,5 @@
+# ほどく経営研究所 — 脆弱性のご連絡先（RFC 9116）
+Contact: mailto:hodoku.management.lab@gmail.com
+Expires: 2027-11-13T15:00:00.000Z
+Preferred-Languages: ja, en
+Canonical: https://hodoku-management-lab.kaoru-furubayashi.com/.well-known/security.txt
