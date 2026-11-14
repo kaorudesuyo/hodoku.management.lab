@@ -28,8 +28,10 @@
   const M = LOGO.length;
   const CY = 0.5 / ASPECT;            // 糸が張られる高さ（ロゴ枠の中央）
   const X0 = -0.0106, X1 = 1.0106;    // まっすぐになったときの両端
-  const STEPS = 720, EVERY = 3;
+  const STEPS = 720, EVERY = 1;       // 物理の全ステップをコマとして持つ（補間の粗さを残さない）
   const F = STEPS / EVERY + 1;        // 保存するコマ数
+  const MAPN = 2048;
+  const T_DRAW = 1.9, T_LABELS = 1.3, T_HOLD = 0.9, T_UNRAVEL = 8.4;   // 秒：一筆で描く → 課題が現れる → 間 → ほどける
 
   // 課題ラベルを結ぶ位置（ロゴ枠内の x, y。y は枠の高さに対する割合）
   const ANCHORS = [[0.215, 0.10], [0.300, 0.30], [0.150, 0.33], [0.325, 0.50], [0.100, 0.60], [0.265, 0.66]];
@@ -40,7 +42,7 @@
     if (!hero || !stage || !cv || !cv.getContext) return;
     const ctx = cv.getContext('2d');
     const issueEls = $$('#issues li'), stepEls = $$('#heroSteps li');
-    const l1 = $('#heroL1'), l2chars = $$('#heroL2 span'), cue = $('#heroCue'), h1 = $('.hero__h1');
+    const l1 = $('#heroL1'), l2chars = $$('#heroL2 span'), replay = $('#heroReplay'), h1 = $('.hero__h1');
 
     /* ---------- 物理シミュレーション（決定的。少しずつ計算してコマとして保存） ---------- */
     const frames = new Float32Array(F * M * 2);
@@ -101,22 +103,37 @@
       // 最後のコマは厳密な直線に
       const o = (F - 1) * M * 2;
       for (let i = 0; i < M; i++) { frames[o + 2 * i] = X0 + (X1 - X0) * i / (M - 1); frames[o + 2 * i + 1] = CY; }
-      // スクロール量あたりの「動きの量」をならす（一気にほどける箇所へ多めに距離を配る）
-      const cum = new Float32Array(F);
+      // 再生の速さをならす。物理のままだと、輪が抜ける一瞬だけ糸が飛ぶように動く。
+      // 各コマの「動きの大きさ」（最も速い点＋全体の平均）を測り、動きの大きい区間ほど長い時間を配って、
+      // 輪が一つずつ抜けていく場面をゆっくり見せる。配分そのものも平滑化して、速さの変わり目に角を作らない
+      const wgt = new Float64Array(F);
       for (let f = 1; f < F; f++) {
-        let m = 0; const a = f * M * 2, b = a - M * 2;
-        for (let i = 0; i < M * 2; i += 8) m += Math.abs(frames[a + i] - frames[b + i]);
-        cum[f] = cum[f - 1] + m;
+        let m = 0, sum = 0; const a = f * M * 2, b = a - M * 2;
+        for (let i = 0; i < M * 2; i += 2) {
+          const dx = frames[a + i] - frames[b + i], dy = frames[a + i + 1] - frames[b + i + 1], d = dx * dx + dy * dy;
+          if (d > m) m = d; sum += d;
+        }
+        wgt[f] = Math.pow(Math.sqrt(m) + 3 * Math.sqrt(sum / M), 0.6);
       }
-      const total = cum[F - 1] || 1, N = 512;
+      const tmp = new Float64Array(F), WIN = 9;
+      for (let pass = 0; pass < 3; pass++) {
+        tmp.set(wgt);
+        for (let f = 1; f < F; f++) {
+          let acc = 0, c = 0;
+          for (let k = -WIN; k <= WIN; k++) { const j = f + k; if (j >= 1 && j < F) { acc += tmp[j]; c++; } }
+          wgt[f] = acc / c;
+        }
+      }
+      const cum = new Float64Array(F);
+      for (let f = 1; f < F; f++) cum[f] = cum[f - 1] + wgt[f];
+      const total = cum[F - 1] || 1, N = MAPN;
       frameMap = new Float32Array(N + 1);
       let f = 0;
       for (let n = 0; n <= N; n++) {
         const target = n / N * total;
         while (f < F - 2 && cum[f + 1] < target) f++;
         const segLen = cum[f + 1] - cum[f];
-        const eq = f + (segLen > 0 ? clamp01((target - cum[f]) / segLen) : 0);
-        frameMap[n] = eq * 0.22 + (n / N) * (F - 1) * 0.78;
+        frameMap[n] = f + (segLen > 0 ? clamp01((target - cum[f]) / segLen) : 0);
       }
       frameMap[N] = F - 1;
       requestDraw();
@@ -182,18 +199,19 @@
     /* ---------- 描画 ---------- */
     let introP = reduce ? 1 : 0;      // 0→1：糸が一筆で描かれる
     let labelsT = reduce ? 1 : 0;     // 0→1：課題ラベルが現れる
-    let sCur = 0, sTarget = 0;        // スクロールの進み（0→1）
-    let needsDraw = true, rafId = 0, lastT = 0, introStart = 0;
+    let hold = 0;                     // 課題を見せておく間
+    let tU = 0;                       // ほどける進み（0→1、時間で進む）
+    let needsDraw = true, rafId = 0, lastT = 0, introStart = 0, done = false;
 
     function frameFor(q) {
       if (!frameMap) return Math.min(q * (F - 1), ready - 1);
-      const u = q * 512, i = Math.min(511, Math.floor(u));
+      const u = q * MAPN, i = Math.min(MAPN - 1, Math.floor(u));
       return frameMap[i] + (frameMap[i + 1] - frameMap[i]) * (u - i);
     }
 
     function render() {
-      const s = sCur;
-      const q = reduce ? 0 : clamp01((s - 0.07) / 0.80);
+      const s = tU;
+      const q = reduce ? 0 : (1 - Math.cos(Math.PI * clamp01(tU))) / 2;   // ゆっくり動き出し、ゆっくり止まる
       const ff = frameFor(q);
       const f0 = Math.min(F - 1, Math.floor(ff)), f1 = Math.min(F - 1, f0 + 1), a = ff - f0;
       const o0 = f0 * M * 2, o1 = f1 * M * 2;
@@ -224,7 +242,7 @@
       }
 
       // 課題ラベルと引き出し線（ほどけ始めると消える）
-      const out = 1 - clamp01((s - 0.045) / 0.07);
+      const out = 1 - easeInOut(clamp01(s / 0.09));
       visibleIssues.forEach((el, j) => {
         const inn = easeOut(clamp01(labelsT * 2.2 - j * 0.22));
         const alpha = inn * out, lp = labelPos[j], ai = anchorIdx[j];
@@ -252,7 +270,7 @@
       if (knot > 0) { ctx.globalAlpha = knot; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x0s, cyS, mobile ? 3.4 : 4.2, 0, 6.2832); ctx.fill(); ctx.globalAlpha = 1; }
       const lineEnd = Math.min(xEnd, mobile ? W - 8 : xEnd), lineLen = lineEnd - x0s;
       stepEls.forEach((el, j) => {
-        const al = reduce ? 0 : easeOut(clamp01((s - (0.885 + j * 0.022)) / 0.05));
+        const al = reduce ? 0 : easeOut(clamp01((s - (0.90 + j * 0.03)) / 0.06));
         const x = x0s + lineLen * STEP_AT[j];
         if (al > 0.002) {
           ctx.globalAlpha = al; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, cyS, 6.5, 0, 6.2832); ctx.fill();
@@ -266,42 +284,46 @@
 
       // 見出しの二行目は、ほどけるにつれて一文字ずつ墨になる
       const nC = l2chars.length;
-      l2chars.forEach((c, i) => c.classList.toggle('is-on', reduce || s > 0.30 + 0.46 * (i / Math.max(1, nC - 1))));
-      if (l1) l1.classList.toggle('is-past', !reduce && s > 0.74);
-      if (cue) cue.classList.toggle('is-gone', s > 0.03);
+      l2chars.forEach((c, i) => c.classList.toggle('is-on', reduce || s > 0.34 + 0.50 * (i / Math.max(1, nC - 1))));
+      if (l1) l1.classList.toggle('is-past', !reduce && s > 0.86);
     }
 
     function tick(now) {
       rafId = 0;
-      const dt = Math.min(0.05, (now - (lastT || now)) / 1000); lastT = now;
+      const dt = Math.min(0.05, (now - (lastT || now)) / 1000); lastT = now;   // タブを離れて戻っても飛ばない
       let active = false;
-      if (introP < 1) { introP = clamp01((now - introStart) / 1900); active = true; }
-      else if (labelsT < 1) { labelsT = clamp01(labelsT + dt / 1.5); active = true; }
-      const d = sTarget - sCur;
-      if (Math.abs(d) > 0.0004) { sCur += d * (1 - Math.exp(-dt / 0.11)); active = true; } else sCur = sTarget;
+      if (introP < 1) { introP = clamp01((now - introStart) / (T_DRAW * 1000)); active = true; }
+      else if (labelsT < 1) { labelsT = clamp01(labelsT + dt / T_LABELS); active = true; }
+      else if (hold < 1) { hold = clamp01(hold + dt / T_HOLD); active = true; }
+      else if (tU < 1) { if (frameMap) tU = clamp01(tU + dt / T_UNRAVEL); active = true; }
       render(); needsDraw = false;
+      if (!done && tU >= 1) { done = true; if (replay) replay.classList.add('is-ready'); }
       if (active) requestDraw();
     }
     function requestDraw() { needsDraw = true; if (!rafId) rafId = requestAnimationFrame(tick); }
 
-    function readScroll() {
-      const r = hero.getBoundingClientRect(), dist = r.height - H;
-      sTarget = dist > 0 ? clamp01(-r.top / dist) : 0;
-      lastT = 0; requestDraw();
+    function play() {            // もう一度：絡まった状態から描き直す
+      if (reduce) return;
+      done = false; if (replay) replay.classList.remove('is-ready');
+      introP = 0; labelsT = 0; hold = 0; tU = 0; lastT = 0; introStart = performance.now() + 150;
+      requestDraw();
     }
+    if (replay) replay.addEventListener('click', play);
 
     stepEls.forEach(el => { const link = el.firstElementChild; if (link) link.tabIndex = -1; });   // 見えるまではキーボードの移動先にしない
     layout();
-    readScroll();
-    if (sTarget > 0.02 || reduce) { introP = 1; labelsT = 1; sCur = sTarget; }   // 途中から開いたときは導入を省く
+    const startedBelow = window.scrollY > H * 0.6;      // 途中から開いたときは、ほどけ切った状態で待つ
+    if (reduce) { introP = 1; labelsT = 1; hold = 1; }
     introStart = performance.now() + 250;
     render();
     requestDraw();
-    if (!reduce) setTimeout(pumpSim, 60);
+    if (!reduce) {
+      if (startedBelow) { while (simK < STEPS) simStep(); introP = 1; labelsT = 1; hold = 1; tU = 1; requestDraw(); }
+      else setTimeout(pumpSim, 60);
+    }
 
-    window.addEventListener('scroll', readScroll, { passive: true });
     let rt = 0;
-    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { layout(); readScroll(); render(); }, 120); });
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { layout(); render(); }, 120); });
     if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(() => { layout(); requestDraw(); });
   }
 

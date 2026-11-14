@@ -41,8 +41,8 @@
 
 <link rel="preload" href="assets/fonts/shippori-mincho-500-core.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/zen-kaku-gothic-new-400-core.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/site.css?v=20261114">
-<script src="assets/js/app.js?v=20261114" defer></script>
+<link rel="stylesheet" href="assets/css/site.css?v=20261114-2">
+<script src="assets/js/app.js?v=20261114-2" defer></script>
 
 <script type="application/ld+json">
 {
@@ -152,10 +152,10 @@
 
 <main id="top">
 
-<!-- ===================== 冒頭：絡まった糸が、スクロールでほどける ===================== -->
+<!-- ===================== 冒頭：絡まった糸が、ひとりでにほどける ===================== -->
 <section class="hero" id="hero" aria-label="現場の課題は、絡み合っている。切らずに、ほどく。">
   <div class="hero__stage">
-    <canvas class="hero__canvas" id="thread" role="img" aria-label="絡み合った一本の糸。ページをスクロールすると、切れることなくほどけて、まっすぐな一本の線になる。"></canvas>
+    <canvas class="hero__canvas" id="thread" role="img" aria-label="絡み合った一本の糸が、切れることなくゆっくりほどけて、まっすぐな一本の線になる。"></canvas>
     <noscript><img class="hero__fallback" src="assets/img/lockup.png" width="880" height="540" alt="ほどく経営研究所 — 切らずに、ほどく。"></noscript>
 
     <!-- 絡まりに添える「現場の課題」の例。文言はここを書き換えるだけで変わります（スマホでは先頭4つを表示） -->
@@ -180,7 +180,7 @@
       <span class="hero__l2" id="heroL2"><span>切</span><span>ら</span><span>ず</span><span>に</span><span>、</span><span>ほ</span><span>ど</span><span>く</span><span>。</span></span>
     </h1>
 
-    <p class="hero__cue" id="heroCue" aria-hidden="true"><span>スクロールして、ほどく</span></p>
+    <button class="hero__replay" id="heroReplay" type="button">もう一度、ほどく</button>
   </div>
 </section>
 
