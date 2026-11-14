@@ -41,8 +41,8 @@
 
 <link rel="preload" href="assets/fonts/shippori-mincho-500-core.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/zen-kaku-gothic-new-400-core.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/site.css?v=20261114-2">
-<script src="assets/js/app.js?v=20261114-2" defer></script>
+<link rel="stylesheet" href="assets/css/site.css?v=20261114-4">
+<script src="assets/js/app.js?v=20261114-4" defer></script>
 
 <script type="application/ld+json">
 {
@@ -152,35 +152,16 @@
 
 <main id="top">
 
-<!-- ===================== 冒頭：絡まった糸が、ひとりでにほどける ===================== -->
-<section class="hero" id="hero" aria-label="現場の課題は、絡み合っている。切らずに、ほどく。">
-  <div class="hero__stage">
-    <canvas class="hero__canvas" id="thread" role="img" aria-label="絡み合った一本の糸が、切れることなくゆっくりほどけて、まっすぐな一本の線になる。"></canvas>
-    <noscript><img class="hero__fallback" src="assets/img/lockup.png" width="880" height="540" alt="ほどく経営研究所 — 切らずに、ほどく。"></noscript>
-
-    <!-- 絡まりに添える「現場の課題」の例。文言はここを書き換えるだけで変わります（スマホでは先頭4つを表示） -->
-    <ul class="issues" id="issues" aria-label="現場でよく聞く課題の例">
-      <li>売上と仕入が別管理</li>
-      <li>見積に時間がかかる</li>
-      <li>同じ数字を二度入力</li>
-      <li>担当者しか分からない</li>
-      <li>紙とExcelの往復</li>
-      <li>何から手をつけるか</li>
-    </ul>
-
-    <!-- ほどけた一本の線に並ぶ、三つの手順（支援内容へ） -->
-    <ol class="hero__steps" id="heroSteps" aria-label="ほどく手順">
-      <li><a href="#services"><span class="hero__step-n">一</span>現場課題の可視化</a></li>
-      <li><a href="#services"><span class="hero__step-n">二</span>スモールスタート</a></li>
-      <li><a href="#services"><span class="hero__step-n">三</span>実装</a></li>
-    </ol>
-
-    <h1 class="hero__h1">
-      <span class="hero__l1" id="heroL1">現場の課題は、絡み合っている。</span>
-      <span class="hero__l2" id="heroL2"><span>切</span><span>ら</span><span>ず</span><span>に</span><span>、</span><span>ほ</span><span>ど</span><span>く</span><span>。</span></span>
-    </h1>
-
-    <button class="hero__replay" id="heroReplay" type="button">もう一度、ほどく</button>
+<!-- ===================== 冒頭：言葉だけで始める ===================== -->
+<section class="hero" id="hero" aria-labelledby="h-hero">
+  <h1 class="hero__h1" id="h-hero" aria-label="切らずに、ほどく。">
+    <span class="hero__col" aria-hidden="true"><span>切</span><span>ら</span><span>ず</span><span>に</span><span>、</span></span>
+    <span class="hero__col" aria-hidden="true"><span>ほ</span><span>ど</span><span>く</span><span>。</span></span>
+  </h1>
+  <div class="hero__foot">
+    <span class="hero__line" aria-hidden="true"></span>
+    <p class="hero__lead">現場課題の可視化から、費用を抑えた課題解決、業務効率化ツールの開発まで。</p>
+    <p class="hero__cta"><a href="#contact">初回相談（無料・30分）を申し込む</a></p>
   </div>
 </section>
 
